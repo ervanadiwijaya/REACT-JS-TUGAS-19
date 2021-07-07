@@ -20,6 +20,13 @@
       "jabatan": "admin",
       "jenis_kelamin": "laki-laki",
       "tanggal_lahir": "1997-07-25"
+    },
+    {
+      "id": 1625646807110,
+      "nama_karyawan": "lian",
+      "jabatan": "bps",
+      "jenis_kelamin": "laki-laki",
+      "tanggal_lahir": "2006-01-01"
     }
   ]
 }

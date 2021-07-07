@@ -12,13 +12,15 @@ class App extends Component {
         nama_karyawan: " ",
         jabatan: " ",
         jenis_kelamin: " ",
-        tanggal_lahir: " "
+        tanggal_lahir: ""
       },
-      valueOption: "select"
+      valueOption: "select",
+      edit: false
     };
     this.handleRemove = this.handleRemove.bind(this);
     this.InputChange = this.InputChange.bind(this);
     this.OnSubmit = this.OnSubmit.bind(this);
+    this.getDataId = this.getDataId.bind(this);
   }
 
   reloadData() {
@@ -34,7 +36,10 @@ class App extends Component {
   InputChange(e) {
     // console.log(e.target.value)
     let newDataPost = { ...this.state.dataPost }
-    newDataPost['id'] = new Date().getTime();
+
+    if (this.state.edit === false) {
+      newDataPost['id'] = new Date().getTime();
+    }
     newDataPost[e.target.name] = e.target.value;
 
     this.setState({
@@ -45,7 +50,46 @@ class App extends Component {
   }
 
   OnSubmit() {
-    axios.post("http://localhost:3000/data-karyawan", this.state.dataPost).then(res => this.reloadData())
+    if (this.state.edit === false) {
+      axios
+        .post("http://localhost:3000/data-karyawan", this.state.dataPost)
+        .then(() => {
+          this.reloadData();
+          this.clearData();
+        });
+    } else {
+      axios
+        .put(`http://localhost:3000/data-karyawan/${this.state.dataPost.id}`, this.state.dataPost)
+        .then(() => {
+          this.reloadData();
+          this.clearData();
+        });
+    }
+  }
+
+  clearData() {
+    let newDataPost = { ...this.state.dataPost };
+    newDataPost['id'] = "";
+    newDataPost['nama_karyawan'] = "";
+    newDataPost['jabatan'] = "";
+    newDataPost['jenis_kelamin'] = "";
+    newDataPost['tanggal_lahir'] = "";
+
+    this.setState({
+      dataPost: newDataPost
+    });
+  }
+
+  getDataId(e) {
+    axios
+      .get(`http://localhost:3000/data-karyawan/${e.target.value}`)
+      .then(
+        res => {
+          this.setState({
+            dataPost: res.data,
+            edit: true
+          })
+        });
   }
 
   handleRemove(e) {
@@ -70,7 +114,7 @@ class App extends Component {
             <Form.Row>
               <Form.Group as={Col} controlId="formGridEmail">
                 <Form.Label>Nama</Form.Label>
-                <Form.Control name="nama_karyawan" type="text" placeholder="Masukan nama lengkap" onChange={this.InputChange} />
+                <Form.Control name="nama_karyawan" type="text" placeholder="Masukan nama lengkap" value={this.state.dataPost.nama_karyawan} onChange={this.InputChange} />
               </Form.Group>
 
               <Form.Group controlId="ControlSelect1">
@@ -85,12 +129,12 @@ class App extends Component {
 
             <Form.Group controlId="formGridTitle">
               <Form.Label>Jabatan</Form.Label>
-              <Form.Control name="jabatan" placeholder="masukan jabatan" onChange={this.InputChange} />
+              <Form.Control name="jabatan" placeholder="masukan jabatan" onChange={this.InputChange} value={this.state.dataPost.jabatan} />
             </Form.Group>
 
             <Form.Group controlId="formGridDate">
               <Form.Label>Tanggal lahir</Form.Label>
-              <Form.Control name="tanggal_lahir" placeholder="masukan tanggal lahir" onChange={this.InputChange} />
+              <Form.Control type="date" name="tanggal_lahir" placeholder="masukan tanggal lahir" onChange={this.InputChange} value={this.state.dataPost.tanggal_lahir} />
             </Form.Group>
 
             <Button onClick={this.OnSubmit} variant="primary" type="submit">
@@ -119,7 +163,7 @@ class App extends Component {
                     <td>{dt.jenis_kelamin}</td>
                     <td>{dt.tanggal_lahir}</td>
                     <td>
-                      <Button variant="primary">Ubah</Button>{' '}
+                      <Button variant="primary" value={dt.id} onClick={this.getDataId}>Ubah</Button>{' '}
                       <Button variant="danger" value={dt.id} onClick={this.handleRemove}>Hapus</Button>
                     </td>
                   </tr>
